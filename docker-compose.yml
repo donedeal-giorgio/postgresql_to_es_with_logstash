@@ -1,0 +1,31 @@
+version: '3.2'
+services:
+  db:
+    image: postgres:9.4
+    restart: always
+    environment:
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      - POSTGRES_PASSWORD=dummy
+      - POSTGRES_DB=ddb
+      - POSTGRES_USER=dummy
+    ports:
+      - 5432:5432
+    volumes:
+      - ./sql/:/docker-entrypoint-initdb.d/
+  logstash:
+    build: .
+    restart: always
+    environment:
+      - CONNECTION_STRING=jdbc:postgresql://db:5432/ddb
+      - DB_USER=dummy
+      - DB_PASSWORD=dummy
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+    expose:
+      - 9200
